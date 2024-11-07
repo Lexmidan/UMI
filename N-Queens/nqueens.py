@@ -1,3 +1,5 @@
+import numpy as np
+n=8
 # For each row, the possible positions for the queens. Initially, all positions are possible.
 # i corresponds to the row, and the list contains the possible positions for the queens in that row.
 poss_positions = {i: list(range(n)) for i in range(n)}
@@ -16,11 +18,24 @@ def remove_col_from_row(i, j, row, col):
         row.remove(col)
         removal_log[i][j].append(col)
 
+def backtrack(f): #f is the step number, that failed
+    positions.pop() # Remove the last queen from the board.
+    for j in removal_log[f-1]:
+        poss_positions[j] += removal_log[f-1][j]
+        removal_log[f-1][j] = []
+
+
 i = 0
 while i < n:
 
+    # Check if there are no possible positions for the queen in row i. Then backtrack
+    if len(poss_positions[i]) == 0:
+        backtrack(i)  
+        i -= 1
+
     position = np.random.choice(poss_positions[i]) 
     positions.append(position)
+    
     # Remove the selected position from the possible positions for the other rows.
     # Remove the position that are under diagonal attack from the selected position.
     if i == n - 1:
