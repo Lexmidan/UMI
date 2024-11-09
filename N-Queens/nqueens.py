@@ -1,11 +1,11 @@
 import numpy as np
 import copy
 
-queens = []
 n = 8
+queens = []
+solutions = []
 
 def allDifferent_column(queens):
-    #If the length of the list (N) is equal to number of unique elements in the list, then all elements are unique
     return len(queens) == len(np.unique(queens))
 
 def consistent_diagonal(queens):
@@ -16,8 +16,6 @@ def consistent_diagonal(queens):
                 return False
     return True
 
-
-# I can now define a function that checks if all the queens are placed correctly
 def nqueens_satisfied(queens):
     return allDifferent_column(queens) and consistent_diagonal(queens)
 
@@ -42,41 +40,35 @@ def remove_col_from_row(row, col):
     if col in row:
         row.remove(col)
 
-def remove_cells_under_attack(domain, q):
-    # Create a deep copy to avoid modifying the original domain
+
+def remove_cells_under_attack(domain, q, row):
     domain = copy.deepcopy(domain)
-    for j in range(len(queens), n):
+    for j in range(row, n):
         remove_col_from_row(domain[j], q)  # Same column
-        remove_col_from_row(domain[j], q + (j - len(queens)))  # Diagonal attack to the right
-        remove_col_from_row(domain[j], q - (j - len(queens)))  # Diagonal attack to the left
+        remove_col_from_row(domain[j], q + (j - row))  # Diagonal attack to the right
+        remove_col_from_row(domain[j], q - (j - row))  # Diagonal attack to the left
     return domain
 
-def bt(domain=None, failed_q=None):
 
+def bt(domain=None):
     if domain is None:
         domain = {i: list(range(n)) for i in range(n)}
     
-    if not domain[len(queens)]:
+    row = len(queens)
+    
+    if row == n:
+        solutions.append(queens.copy())
+        return
+
+    if not domain[row]:
         # No possible positions for the current queen, backtrack
-        return queens.pop() if queens else None
+        return
 
-    q = np.random.choice(domain[len(queens)])
-    
-    domain = remove_cells_under_attack(domain, q)
-    queens.append(q)
-
-    if len(queens) == n:
-        print("Solution:", queens)
-        return None
-    
-    while domain.get(len(queens), []):
-        failed_q = bt(domain, None)
-        if failed_q is not None:
-            domain[len(queens)].remove(failed_q)
-        else:
-            return None
-
-    return queens.pop()  # Backtrack
+    for q in domain[row]:
+        new_domain = remove_cells_under_attack(domain, q, row)
+        queens.append(q)
+        bt(new_domain)
+        queens.pop()  # Backtrack
 
 bt()
 
